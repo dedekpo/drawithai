@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: "payment",
-      success_url: `${process.env.NEXTAUTH_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/`,
+      success_url: `${request.headers.get("origin")}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${request.headers.get("origin")}/`,
       customer_email: email,
       metadata: {
         userEmail: email,
