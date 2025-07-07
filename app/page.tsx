@@ -1,103 +1,281 @@
-import Image from "next/image";
+"use client";
+import { useState, useRef } from "react";
+import { useSession } from "next-auth/react";
+import DrawingCanvas from "./components/DrawingCanvas";
+import AuthButton from "./components/AuthButton";
+import CreditSystem, { CreditSystemRef } from "./components/CreditSystem";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { data: session, status } = useSession();
+  const [drawingData, setDrawingData] = useState<string>("");
+  const [generatedImage, setGeneratedImage] = useState<string>("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string>("");
+  const [userCredits, setUserCredits] = useState<number>(0);
+  const [creditUpdateMessage, setCreditUpdateMessage] = useState<string>("");
+  const creditSystemRef = useRef<CreditSystemRef>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleDrawingChange = (imageData: string) => {
+    setDrawingData(imageData);
+    setError(""); // Limpar erro quando usuário desenha
+  };
+
+  const handleCreditsUpdate = (credits: number) => {
+    setUserCredits(credits);
+  };
+
+  const generateImage = async () => {
+    if (!session) {
+      setError("Você precisa estar logado para usar esta funcionalidade!");
+      return;
+    }
+
+    if (!drawingData) {
+      setError("Por favor, desenhe algo no canvas primeiro!");
+      return;
+    }
+
+    if (userCredits < 1) {
+      setError("Você não tem créditos suficientes! Compre mais créditos para continuar.");
+      return;
+    }
+
+    setIsGenerating(true);
+    setError("");
+    
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imageData: drawingData,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setGeneratedImage(data.imageUrl);
+        // Atualizar créditos localmente primeiro para resposta imediata
+        if (data.creditsRemaining !== undefined) {
+          setUserCredits(data.creditsRemaining);
+          // Forçar atualização do componente CreditSystem
+          setCreditUpdateMessage(`✅ Imagem gerada! 1 crédito descontado. Restam ${data.creditsRemaining} créditos.`);
+          setTimeout(() => setCreditUpdateMessage(""), 5000);
+          
+          // Depois forçar atualização do componente
+          setTimeout(async () => {
+            if (creditSystemRef.current) {
+              await creditSystemRef.current.refreshCredits();
+            }
+          }, 100);
+        }
+      } else {
+        if (response.status === 402) {
+          setError("Você não tem créditos suficientes! Compre mais créditos para continuar.");
+        } else {
+          setError(data.error || "Erro ao editar imagem. Tente novamente.");
+        }
+      }
+    } catch (error) {
+      console.error("Erro:", error);
+      setError("Erro de conexão. Verifique sua internet e tente novamente.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  if (status === "loading") {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-slate-600">Carregando...</p>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header com Autenticação */}
+        <div className="text-center mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <div></div> {/* Spacer */}
+            <h1 className="text-4xl font-bold text-slate-700">
+              🎨 AI Drawing Enhancer
+            </h1>
+            <AuthButton />
+          </div>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            {session 
+              ? "Desenhe algo no canvas e nossa IA irá transformar seu desenho em uma obra de arte profissional!"
+              : "Faça login com sua conta Google para começar a transformar seus desenhos em obras de arte!"
+            }
+          </p>
+        </div>
+
+        {/* Conteúdo Principal */}
+        {!session ? (
+          // Tela de Login
+          <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+            <div className="text-center bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-12 max-w-md">
+              <div className="text-6xl mb-6">🔐</div>
+              <h2 className="text-2xl font-bold text-slate-700 mb-4">
+                Acesso Restrito
+              </h2>
+              <p className="text-slate-600 mb-8">
+                Para usar o AI Drawing Enhancer, você precisa fazer login com sua conta Google.
+              </p>
+              <AuthButton />
+            </div>
+            
+            {/* Preview das funcionalidades */}
+            <div className="w-full max-w-2xl bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
+              <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">
+                💡 O que você pode fazer após o login
+              </h3>
+              <div className="flex flex-col md:flex-row gap-4 text-center">
+                <div className="flex-1">
+                  <div className="text-2xl mb-2">✏️</div>
+                  <h4 className="font-medium text-slate-700 mb-1">Desenhe</h4>
+                  <p className="text-slate-600 text-sm">
+                    Crie seus desenhos no canvas interativo
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <div className="text-2xl mb-2">🤖</div>
+                  <h4 className="font-medium text-slate-700 mb-1">IA Transforma</h4>
+                  <p className="text-slate-600 text-sm">
+                    Nossa IA aprimora seus desenhos
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <div className="text-2xl mb-2">🎨</div>
+                  <h4 className="font-medium text-slate-700 mb-1">Arte Profissional</h4>
+                  <p className="text-slate-600 text-sm">
+                    Receba resultados incríveis
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Interface Principal (usuário logado)
+          <div className="flex flex-col items-center space-y-8">
+            
+            {/* Sistema de Créditos */}
+            <CreditSystem 
+              ref={creditSystemRef}
+              onCreditsUpdate={handleCreditsUpdate} 
+              externalCredits={userCredits}
+            />
+            <div className="w-full max-w-2xl bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
+              <h2 className="text-xl font-semibold text-slate-700 mb-4 text-center">
+                ✏️ Área de Desenho
+              </h2>
+              <DrawingCanvas onDrawingChange={handleDrawingChange} />
+            </div>
+
+            {/* Mensagem de erro */}
+            {error && (
+              <div className="w-full max-w-2xl p-4 bg-red-100/80 backdrop-blur-sm border border-red-200 text-red-700 rounded-xl text-center">
+                {error}
+              </div>
+            )}
+
+            {/* Mensagem de atualização de créditos */}
+            {creditUpdateMessage && (
+              <div className="w-full max-w-2xl p-4 bg-green-100/80 backdrop-blur-sm border border-green-200 text-green-700 rounded-xl text-center">
+                {creditUpdateMessage}
+              </div>
+            )}
+
+            {/* Botão Grande para Gerar IA */}
+            <button
+              onClick={generateImage}
+              disabled={isGenerating || !drawingData || userCredits < 1}
+              className="w-full max-w-md px-8 py-6 bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 text-white font-bold text-xl rounded-2xl hover:from-purple-500 hover:via-pink-500 hover:to-rose-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              {isGenerating ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                  Transformando desenho...
+                </div>
+              ) : userCredits < 1 ? (
+                <div className="flex items-center justify-center">
+                  <span className="mr-2">🔒</span>
+                  Sem Créditos - Compre Mais
+                </div>
+              ) : (
+                <div className="flex items-center justify-center">
+                  <span className="mr-2">🚀</span>
+                  Transformar com IA ({userCredits} crédito{userCredits !== 1 ? 's' : ''})
+                </div>
+              )}
+            </button>
+
+            {/* Resultado - Quarto */}
+            <div className="w-full max-w-2xl bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
+              <h2 className="text-xl font-semibold text-slate-700 mb-4 text-center">
+                🎨 Resultado da IA
+              </h2>
+              <div className="border-2 border-dashed border-slate-300 rounded-xl h-96 flex items-center justify-center bg-white/50">
+                {generatedImage ? (
+                  <img
+                    src={generatedImage}
+                    alt="Imagem transformada pela IA"
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-md"
+                  />
+                ) : (
+                  <div className="text-center text-slate-500">
+                    <div className="text-6xl mb-4">🖼️</div>
+                    <p className="text-lg">
+                      {isGenerating 
+                        ? "Transformando sua obra de arte..." 
+                        : "Sua imagem transformada aparecerá aqui"
+                      }
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Instruções Simplificadas */}
+            <div className="w-full max-w-2xl bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 mt-8">
+              <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">
+                💡 Como Funciona
+              </h3>
+              <div className="flex flex-col md:flex-row gap-4 text-center">
+                <div className="flex-1">
+                  <div className="text-2xl mb-2">✏️</div>
+                  <h4 className="font-medium text-slate-700 mb-1">Desenhe</h4>
+                  <p className="text-slate-600 text-sm">
+                    Crie seu desenho no canvas
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <div className="text-2xl mb-2">🤖</div>
+                  <h4 className="font-medium text-slate-700 mb-1">IA Transforma</h4>
+                  <p className="text-slate-600 text-sm">
+                    Nossa IA aprimora seu desenho
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <div className="text-2xl mb-2">🎨</div>
+                  <h4 className="font-medium text-slate-700 mb-1">Arte Profissional</h4>
+                  <p className="text-slate-600 text-sm">
+                    Receba o resultado aprimorado
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }

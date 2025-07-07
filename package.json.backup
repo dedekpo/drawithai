@@ -9,10 +9,13 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf .next node_modules package-lock.json",
-    "reset": "npm run clean && npm install"
+    "setup": "bash scripts/setup.sh",
+    "reset": "npm run clean && npm install",
+    "test-firebase": "node scripts/test-firebase.js",
+    "migrate-firebase": "node scripts/migrate-to-firebase.js"
   },
   "dependencies": {
-    "firebase-admin": "^12.7.0",
+    "firebase-admin": "^12.0.0",
     "next": "15.3.5",
     "next-auth": "^5.0.0-beta.29",
     "openai": "^5.8.2",
