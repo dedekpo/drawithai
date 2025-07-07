@@ -111,7 +111,6 @@ export default function Home() {
                 DrawithAI
               </h1>
             </div>
-            <AuthButton />
           </div>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             {session 
@@ -176,7 +175,7 @@ export default function Home() {
               onCreditsUpdate={handleCreditsUpdate} 
               externalCredits={userCredits}
             />
-            <div className="w-full max-w-2xl bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
+            <div className="w-full max-w-2xl bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-2 lg:p-6">
               <h2 className="text-xl font-semibold text-slate-700 mb-4 text-center">
                 ✏️ Área de Desenho
               </h2>
