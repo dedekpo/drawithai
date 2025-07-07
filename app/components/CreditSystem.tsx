@@ -94,20 +94,6 @@ const CreditSystem = forwardRef<CreditSystemRef, CreditSystemProps>(
       refreshCredits: fetchCredits
     }));
 
-    // Test function for debugging
-    const testCreditsAPI = async () => {
-      console.log("🔍 CreditSystem: Testing credits API...");
-      try {
-        const response = await fetch("/api/test-credits");
-        const data = await response.json();
-        console.log("🔍 CreditSystem: Test API response:", data);
-        alert(`Test API Response: ${JSON.stringify(data, null, 2)}`);
-      } catch (error) {
-        console.error("❌ CreditSystem: Test API error:", error);
-        alert(`Test API Error: ${error}`);
-      }
-    };
-
     const handlePurchaseCredits = async () => {
       if (!session?.user?.email) return;
 
@@ -159,13 +145,8 @@ const CreditSystem = forwardRef<CreditSystemRef, CreditSystemProps>(
               >
                 🔄
               </button>
-            )}            <button
-              onClick={testCreditsAPI}
-              className="ml-2 px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
-              title="Testar API"
-            >
-              🧪
-            </button>          </div>
+            )}
+          </div>
         </div>
 
         {error && (
