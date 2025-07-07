@@ -215,7 +215,7 @@ const CreditSystem = forwardRef<CreditSystemRef, CreditSystemProps>(
               <span className="text-3xl font-bold text-purple-600">7</span>
               <span className="text-slate-600">créditos</span>
               <span className="text-slate-400">•</span>
-              <span className="text-2xl font-bold text-green-600">R$ 5,00</span>
+              <span className="text-2xl font-bold text-green-600">R$ 10,00</span>
             </div>
             <p className="text-slate-600 text-sm">
               Cada crédito = 1 geração de imagem com IA
@@ -235,7 +235,7 @@ const CreditSystem = forwardRef<CreditSystemRef, CreditSystemProps>(
             ) : (
               <div className="flex items-center justify-center">
                 <span className="mr-2">💳</span>
-                Comprar 7 Créditos por R$ 5,00
+                Comprar 7 Créditos por R$ 10,00
               </div>
             )}
           </button>

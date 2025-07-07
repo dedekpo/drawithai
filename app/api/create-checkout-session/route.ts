@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
               description: "Pacote com 7 créditos para gerar imagens com inteligência artificial",
               images: [], // Você pode adicionar uma imagem do produto aqui
             },
-            unit_amount: 500, // R$ 5,00 em centavos
+            unit_amount: 1000, // R$ 10,00 em centavos
           },
           quantity: 1,
         },
