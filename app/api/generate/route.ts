@@ -50,11 +50,7 @@ export async function POST(request: NextRequest) {
     const base64Image = extractBase64FromDataUrl(imageData);
 
     // Usar a nova Responses API para editar/melhorar a imagem diretamente
-    const prompt = `Transform this image into a hand-drawn pencil art, maintaining the main shapes, proportions, and overall style of the original image.
-The result should look like a drawing made by an advanced-level artist—detailed and visually appealing, but not overly complex or hyper-realistic.
-The lines should be clear and confident, with visible pencil strokes and some shading to suggest depth, but avoid excessive detail or photorealism.
-If the original image uses colors, vividly suggest them with colored pencils, keeping the coloring simple and easy to replicate.
-The final sketch should inspire users who are learning to draw and be achievable for someone practicing with regular pencils and paper at home.`;
+    const prompt = `Transform this image into a professional art made by a professional artist usign an iPad.`;
 
     const response = await openai.responses.create({
       model: "gpt-4o",
