@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import DrawingCanvas from "./components/DrawingCanvas";
 import AuthButton from "./components/AuthButton";
 import CreditSystem, { CreditSystemRef } from "./components/CreditSystem";
+import Image from "next/image";
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -104,10 +105,12 @@ export default function Home() {
         {/* Header com Autenticação */}
         <div className="text-center mb-8">
           <div className="flex justify-between items-center mb-6">
-            <div></div> {/* Spacer */}
-            <h1 className="text-4xl font-bold text-slate-700">
-              🎨 AI Drawing Enhancer
-            </h1>
+            <div className="flex items-center gap-2">
+              <Image alt="DrawithAI logo" src="/icon1.png" width={50} height={50} />
+              <h1 className="text-4xl font-bold text-slate-700">
+                DrawithAI
+              </h1>
+            </div>
             <AuthButton />
           </div>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
@@ -128,7 +131,7 @@ export default function Home() {
                 Acesso Restrito
               </h2>
               <p className="text-slate-600 mb-8">
-                Para usar o AI Drawing Enhancer, você precisa fazer login com sua conta Google.
+                Para usar o DrawithAI, você precisa fazer login com sua conta Google.
               </p>
               <AuthButton centered />
             </div>

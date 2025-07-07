@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Drawing Enhancer",
+  title: "DrawithAI",
   description: "Transforme seus desenhos em obras de arte com IA",
 };
 

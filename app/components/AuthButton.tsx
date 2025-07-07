@@ -28,7 +28,7 @@ export default function AuthButton({ centered = false }: AuthButtonProps) {
               className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
             />
           )}
-          <div className="text-sm">
+          <div className="text-sm text-left">
             <p className="font-medium text-slate-700">
               Olá, {session.user?.name?.split(' ')[0]}!
             </p>
