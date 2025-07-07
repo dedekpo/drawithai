@@ -130,7 +130,7 @@ export default function Home() {
               <p className="text-slate-600 mb-8">
                 Para usar o AI Drawing Enhancer, você precisa fazer login com sua conta Google.
               </p>
-              <AuthButton />
+              <AuthButton centered />
             </div>
             
             {/* Preview das funcionalidades */}
